@@ -24,7 +24,7 @@ func main() {
 	router.GET("/api/v1/builds/:org/:repository/:build_number", getBuild)
 	router.GET("/api/v1/repositories/:org/:repository", getRepositoryConfiguration)
 	router.POST("/api/v1/events", notifyEvent)
-	router.Run(":" + config.Server.Port)
+	router.Run(":8080")
 }
 
 func getAllBuilds(c *gin.Context) {
