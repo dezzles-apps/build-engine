@@ -80,6 +80,9 @@ func LoadConfig() (*Config, error) {
 	var config Config
 	env := os.Getenv("ENVIRONMENT")
 	configFile := "config/config." + env + ".yaml"
+	if (env != "dev") {
+		configFile = "/" + configFile
+	}
 	data, err := os.ReadFile(configFile)
 	if err != nil {
 		return nil, err

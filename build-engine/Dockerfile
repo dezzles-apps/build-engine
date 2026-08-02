@@ -13,6 +13,5 @@ FROM golang:1.26 AS runtime
 COPY --from=builder /build-engine /build-engine
 COPY config/config.prod.yaml /config/config.yaml
 COPY config/config.non.yaml /config/config.non.yaml
-
 EXPOSE 8080
 ENTRYPOINT ["/build-engine"]
