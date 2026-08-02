@@ -9,7 +9,7 @@ primary:
   port: 8080
   env:
     - envName: EVENT_SERVICE_PORT
-      value: 8888
+      value: '8888'
   secrets:
     - envName: DATABASE_PASSWORD_PROD
       secretName: build-engine-db-password-prd
