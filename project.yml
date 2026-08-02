@@ -3,6 +3,8 @@ version: '1.0'
 environments:
   - non
   - prod
+audiences:
+  - build-engine
 primary:
   name: build-engine
   image: us-west2-docker.pkg.dev/dezzles-apps/dezzles-apps-docker/build-engine
