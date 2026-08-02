@@ -4,7 +4,16 @@ on:
   workflow_dispatch:
  
 jobs:
+  notify-start:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dezzles-apps/action-event@main
+        id: event
+        with:
+          token: ${{ secrets.GCLOUD_KEY_FILE }}
+          message: "Starting build process for commit: ${{ github.event.head_commit.url }}"
   configuration:
+    needs: [ notify-start ]
     uses: dezzles-apps/actions/.github/workflows/create-config.yml@main
     
   build-build-engine:
