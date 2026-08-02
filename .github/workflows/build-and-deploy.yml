@@ -1,0 +1,51 @@
+name: Build And Deploy
+on:
+  push:
+  workflow_dispatch:
+ 
+jobs:
+  configuration:
+    uses: dezzles-apps/actions/.github/workflows/create-config.yml@main
+    
+  build-build-engine:
+    uses: dezzles-apps/actions/.github/workflows/build-docker.yml@main
+    needs: [ configuration ]
+    with:
+      app-name: build-engine
+      docker-context: ./build-engine
+      version: '${{ needs.configuration.outputs.version }}'
+    secrets: inherit
+
+  build-event-service:
+    uses: dezzles-apps/actions/.github/workflows/build-docker.yml@main
+    needs: [ configuration ]
+    with:
+      app-name: event-service
+      docker-context: ./event-service
+      version: '${{ needs.configuration.outputs.version }}'
+    secrets: inherit
+
+  generate-specs:
+    uses: dezzles-apps/actions/.github/workflows/create-specs.yml@main
+    needs: [ configuration ]
+    with:
+      version: '${{ needs.configuration.outputs.version }}'
+      spec: project.yml
+    secrets: inherit
+
+  deploy-non:
+    uses: dezzles-apps/actions/.github/workflows/cloud-run-spec-deploy.yml@main
+    needs: [ generate-specs, build-build-engine, build-event-service ]
+    with:
+      environment: non
+      app-name: build-engine
+    secrets: inherit
+
+  deploy-prod:
+    uses: dezzles-apps/actions/.github/workflows/cloud-run-spec-deploy.yml@main
+    needs: [ deploy-non ]
+    if: false
+    with:
+      environment: prod
+      app-name: build-engine
+    secrets: inherit

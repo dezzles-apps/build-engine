@@ -1,0 +1,37 @@
+name: build-engine
+version: '1.0'
+environments:
+  - non
+  - prod
+primary:
+  name: build-engine
+  image: us-west2-docker.pkg.dev/dezzles-apps/dezzles-apps-docker/build-engine
+  port: 8080
+  env:
+    - envName: EVENT_SERVICE_PORT
+      value: 8888
+  secrets:
+    - envName: DATABASE_PASSWORD_PROD
+      secretName: build-engine-db-password-prd
+    - envName: DATABASE_PASSWORD_NON
+      secretName: build-engine-db-password-non
+sidecars:
+  - name: event-service
+    image: us-west2-docker.pkg.dev/dezzles-apps/dezzles-apps-docker/event-service
+    port: 8888
+    secrets:
+      - envName: DATABASE_PASSWORD_PROD
+        secretName: build-engine-db-password-prd
+      - envName: DATABASE_PASSWORD_NON
+        secretName: build-engine-db-password-non
+      - envName: DISCORD_TOKEN
+        secretName: discord-token
+    env:
+      - envName: DATASOURCE_URL
+        value: jdbc:mysql://dezzles-apps-do-user-35978446-0.h.db.ondigitalocean.com:25060/alltheskins?sslMode=REQUIRED&allowPublicKeyRetrieval=true
+      - envName: DATASOURCE_USERNAME
+        value: alltheskins-non
+      - envName: FIREBASE_PROJECT_ID
+        value: word-project-430922
+      - envName: GCS_BUCKET_NAME
+        value: alltheskins-non

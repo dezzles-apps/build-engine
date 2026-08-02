@@ -1,0 +1,13 @@
+server:
+  port: $SERVER_PORT
+
+event-service:
+  host: localhost
+  port: $EVENT_SERVICE_PORT
+
+database:
+  host: dezzles-apps-do-user-35978446-0.h.db.ondigitalocean.com
+  port: 25060
+  username: build-engine-non
+  password: $DATABASE_PASSWORD_NON
+  database: build-engine
