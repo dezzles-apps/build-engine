@@ -10,7 +10,7 @@ jobs:
       - uses: dezzles-apps/action-event@main
         id: event
         with:
-          token: ${{ secrets.GCLOUD_KEY_FILE }}
+          credentialsJson: ${{ secrets.GCLOUD_KEY_FILE }}
           message: "Starting build process for commit: ${{ github.event.head_commit.url }}"
   configuration:
     needs: [ notify-start ]
