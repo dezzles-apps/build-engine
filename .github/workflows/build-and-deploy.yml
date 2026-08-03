@@ -7,7 +7,7 @@ jobs:
   notify-start:
     runs-on: ubuntu-latest
     steps:
-      - uses: dezzles-apps/action-event@main
+      - uses: dezzles-apps/action-event/actions/event@main
         id: event
         with:
           credentialsJson: ${{ secrets.GCLOUD_KEY_FILE }}
