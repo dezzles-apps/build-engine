@@ -9,10 +9,9 @@ import (
 )
 
 type Config struct {
-
-	Database DatabaseConfig `yaml:"database"`
-	EventService  EventServiceConfig  `yaml:"event-service"`
-	Server   ServerConfig   `yaml:"server"`
+	Database     DatabaseConfig     `yaml:"database"`
+	EventService EventServiceConfig `yaml:"event-service"`
+	Server       ServerConfig       `yaml:"server"`
 }
 
 type ServerConfig struct {
@@ -44,26 +43,26 @@ func resolveEnv(s string) string {
 // resolveEnvVarsInStruct recursively walks through a struct and resolves environment variables in all string fields
 func resolveEnvVarsInStruct(v interface{}) {
 	val := reflect.ValueOf(v)
-	
+
 	// Handle pointer types
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}
-	
+
 	// Only process structs
 	if val.Kind() != reflect.Struct {
 		return
 	}
-	
+
 	// Iterate through all fields
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Field(i)
-		
+
 		// If it's a pointer, dereference it
 		if field.Kind() == reflect.Ptr {
 			field = field.Elem()
 		}
-		
+
 		switch field.Kind() {
 		case reflect.String:
 			// Resolve environment variables in string fields
@@ -80,9 +79,6 @@ func LoadConfig() (*Config, error) {
 	var config Config
 	env := os.Getenv("ENVIRONMENT")
 	configFile := "config/config." + env + ".yaml"
-	if (env != "dev") {
-		configFile = "/" + configFile
-	}
 	data, err := os.ReadFile(configFile)
 	if err != nil {
 		return nil, err
@@ -91,9 +87,9 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Automatically resolve all environment variables in string fields
 	resolveEnvVarsInStruct(&config)
-	
+
 	return &config, nil
 }
