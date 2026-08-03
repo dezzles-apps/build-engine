@@ -5,13 +5,22 @@ import (
 	"dezzles-apps/build-engine/repository"
 )
 
-func ValidateBuild(event model.BuildEvent) (bool, error) {
+type BuildService struct {
+	repository *repository.EventsRepository
+}
+
+func (s *BuildService) Initialise(repository *repository.EventsRepository) error {
+	s.repository = repository
+	return nil
+}
+
+func (s *BuildService) ValidateBuild(event model.BuildEvent) (bool, error) {
 	organisation := event.Organisation
 	repositoryName := event.Repository
 	buildNumber := event.BuildNumber
 	ref := event.Ref
 
-	config, err := repository.CreateRepositoryConfiguration(organisation, repositoryName, nil)
+	config, err := s.repository.CreateRepositoryConfiguration(organisation, repositoryName, nil)
 	if err != nil {
 		return false, err
 	}
@@ -19,7 +28,7 @@ func ValidateBuild(event model.BuildEvent) (bool, error) {
 		return false, nil
 	}
 
-	build, err := repository.CreateBuildRun(organisation, repositoryName, buildNumber, ref)
+	build, err := s.repository.CreateBuildRun(organisation, repositoryName, buildNumber, ref)
 	if err != nil {
 		return false, err
 	}

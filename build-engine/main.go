@@ -1,34 +1,44 @@
 package main
+
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
-	"strconv"
 	"dezzles-apps/build-engine/model"
 	"dezzles-apps/build-engine/repository"
 	"dezzles-apps/build-engine/service"
+	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 var eventService *service.EventService = &service.EventService{}
+var buildService *service.BuildService = &service.BuildService{}
+var portfolioRepository *repository.PortfolioRepository = &repository.PortfolioRepository{}
+var database *repository.Database = &repository.Database{}
+var eventRepository *repository.EventsRepository = &repository.EventsRepository{}
 
 func main() {
-	
+
 	config, err := model.LoadConfig()
 	if err != nil {
 		panic(err)
 	}
-	repository.Connect(&config.Database)
+	database.Connect(&config.Database)
+	eventRepository.Initialise(database)
 	eventService.Initialise(&config.EventService)
+	buildService.Initialise(eventRepository)
+	portfolioRepository.Initialise(database)
 	router := gin.Default()
 	router.GET("/api/v1/builds", getAllBuilds)
 	router.GET("/api/v1/builds/:org/:repository", getBuildsByRepository)
 	router.GET("/api/v1/builds/:org/:repository/:build_number", getBuild)
 	router.GET("/api/v1/repositories/:org/:repository", getRepositoryConfiguration)
 	router.POST("/api/v1/events", notifyEvent)
+	router.POST("/api/v1/publish", publish)
 	router.Run(":8080")
 }
 
 func getAllBuilds(c *gin.Context) {
-	builds, err := repository.GetBuilds()
+	builds, err := eventRepository.GetBuilds()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -39,7 +49,7 @@ func getAllBuilds(c *gin.Context) {
 func getBuildsByRepository(c *gin.Context) {
 	org := c.Param("org")
 	repositoryName := c.Param("repository")
-	builds, err := repository.GetBuildsByRepository(org, repositoryName)
+	builds, err := eventRepository.GetBuildsByRepository(org, repositoryName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -50,7 +60,7 @@ func getBuildsByRepository(c *gin.Context) {
 func getRepositoryConfiguration(c *gin.Context) {
 	org := c.Param("org")
 	repositoryName := c.Param("repository")
-	config, err := repository.GetRepositoryConfiguration(org, repositoryName)
+	config, err := eventRepository.GetRepositoryConfiguration(org, repositoryName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -58,7 +68,7 @@ func getRepositoryConfiguration(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, config)
 }
 
-func getBuild(c * gin.Context) {
+func getBuild(c *gin.Context) {
 	org := c.Param("org")
 	repositoryName := c.Param("repository")
 	buildNumberStr := c.Param("build_number")
@@ -67,7 +77,7 @@ func getBuild(c * gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid build number"})
 		return
 	}
-	build, err := repository.GetBuild(org, repositoryName, buildNumber)
+	build, err := eventRepository.GetBuild(org, repositoryName, buildNumber)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -86,11 +96,31 @@ func notifyEvent(c *gin.Context) {
 		return
 	}
 
-	_, err := service.ValidateBuild(event)
+	_, err := buildService.ValidateBuild(event)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	eventService.SendEvent(event)
 	c.JSON(http.StatusOK, gin.H{"success": true, "event": event})
+}
+
+func publish(c *gin.Context) {
+	var message model.PublishEvent
+	if err := c.ShouldBindJSON(&message); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := message.Validate(); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := portfolioRepository.UpdatePortfolio(message)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": message})
 }
