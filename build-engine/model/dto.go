@@ -33,7 +33,7 @@ func (p *PublishEvent) Validate() error {
 		return fmt.Errorf("config.description is required")
 	}
 	if p.Config.Url == "" {
-		return fmt.Errorf("config.url is required")
+		p.Config.Url = ""
 	}
 	if p.Config.Category == "" {
 		return fmt.Errorf("config.category is required")
