@@ -28,3 +28,26 @@ sidecars:
         secretName: build-engine-db-password-non
       - envName: DISCORD_TOKEN
         secretName: discord-token
+publish:
+  enabled: Build Engine
+  description: |
+    A collection of services that events from Github Actions.<br>
+    <ul>
+      <li>Events - Receives events from actions based on the current steps in the Github Workflow. Also posts them to Discord threads</li>
+      <li>Publish - Saves project information to the database to be exposed by the Portfolio website</li>
+    </ul>
+    Build Engine runs in a private Google Cloud Run environment that requires authentication to access. It is not intended to be accessed directly by end users.<br>
+    It's composed of two services:
+    <ul>
+      <li>Build-Engine - Built in GoLang, and is the exposed API. Build Engine receives Publish and Event calls from Github Actions and 
+        stores build information in the database. When events are received it also calls the Event Service.
+      </li>
+      <li>Event Service - Saves events to the database and also posts them to Discord threads</li>
+    </ul>
+    Interaction with this service is handled via the actions in  <b>Action Event</b> Github repository (see Tooling)
+  category: SERVICES
+  shareRepository: true
+  technologies:
+    - GoLang
+    - Node.js
+    - MySQL

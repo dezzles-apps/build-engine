@@ -58,3 +58,10 @@ jobs:
       environment: prod
       app-name: build-engine
     secrets: inherit
+    
+  publish:
+    uses: dezzles-apps/actions/.github/workflows/publish-to-portfolio.yml@main
+    needs: [ deploy-prod, configuration ]
+    with:
+      version: '${{ needs.configuration.outputs.version }}'
+    secrets: inherit
