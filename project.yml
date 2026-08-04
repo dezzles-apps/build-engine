@@ -29,7 +29,8 @@ sidecars:
       - envName: DISCORD_TOKEN
         secretName: discord-token
 publish:
-  enabled: Build Engine
+  enabled: true
+  title: Build Engine
   description: |
     A collection of services that events from Github Actions.<br>
     <ul>
