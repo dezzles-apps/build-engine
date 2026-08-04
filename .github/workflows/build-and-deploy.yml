@@ -53,12 +53,11 @@ jobs:
   deploy-prod:
     uses: dezzles-apps/actions/.github/workflows/cloud-run-spec-deploy.yml@main
     needs: [ deploy-non ]
-    if: false
     with:
       environment: prod
       app-name: build-engine
     secrets: inherit
-    
+
   publish:
     uses: dezzles-apps/actions/.github/workflows/publish-to-portfolio.yml@main
     needs: [ deploy-prod, configuration ]
