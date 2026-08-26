@@ -1,12 +1,13 @@
 package model
 
 type BuildEvent struct {
-	Repository string `json:"repository"`
+	Repository   string `json:"repository"`
 	Organisation string `json:"organisation"`
-	BuildNumber int `json:"buildNumber"`
-	Message string `json:"message"`
-	Component string `json:"component"`
-	Ref string `json:"ref"`
+	BuildNumber  int    `json:"buildNumber"`
+	BuildId      string `json:"buildId"`
+	Message      string `json:"message"`
+	Component    string `json:"component"`
+	Ref          string `json:"ref"`
 }
 
 func (e *BuildEvent) Validate() error {
@@ -18,6 +19,9 @@ func (e *BuildEvent) Validate() error {
 	}
 	if e.BuildNumber == 0 {
 		return &ValidationError{Field: "buildNumber", Message: "Missing required field: buildNumber"}
+	}
+	if e.BuildId == "" {
+		return &ValidationError{Field: "buildId", Message: "Missing required field: buildId"}
 	}
 	if e.Message == "" {
 		return &ValidationError{Field: "message", Message: "Missing required field: message"}

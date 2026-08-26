@@ -9,7 +9,7 @@ let eventService = {
     discordClient = discord
     eventRepository = r
   },
-  event: async function({ organisation, repository, buildNumber, message, component, ref }) {
+  event: async function({ organisation, repository, buildNumber, buildId, message, component, ref }) {
     try {
       const [build, config] = await Promise.all([
         eventRepository.getBuild(organisation, repository, buildNumber),
@@ -24,7 +24,7 @@ let eventService = {
       const channel = config.channel ? config.channel : 'dezzles-apps'
       console.log(build.discord_thread_id)
       if (!build.discord_thread_id) {
-        let threadId = await discordClient.createThread(channel, organisation, repository, buildNumber, ref)
+        let threadId = await discordClient.createThread(channel, organisation, repository, buildNumber, buildId, ref)
         build.discord_thread_id = threadId.id
         console.log(`Created new thread for ${organisation}/${repository} #${buildNumber}: ${build.discord_thread_id}`)
         await eventRepository.setDiscordThreadId(organisation, repository, buildNumber, build)
