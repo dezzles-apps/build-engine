@@ -3,6 +3,7 @@ package service
 import (
 	"dezzles-apps/build-engine/model"
 	"dezzles-apps/build-engine/repository"
+	"log"
 )
 
 type BuildService struct {
@@ -19,6 +20,7 @@ func (s *BuildService) ValidateBuild(event model.BuildEvent) (bool, error) {
 	repositoryName := event.Repository
 	buildNumber := event.BuildNumber
 	ref := event.Ref
+	log.Printf("Validating build: %s/%s #%d", organisation, repositoryName, buildNumber)
 
 	config, err := s.repository.CreateRepositoryConfiguration(organisation, repositoryName, nil)
 	if err != nil {
@@ -35,6 +37,6 @@ func (s *BuildService) ValidateBuild(event model.BuildEvent) (bool, error) {
 	if build == nil {
 		return false, nil
 	}
-
+	log.Printf("Build validated:  %s/%s #%d", organisation, repositoryName, buildNumber)
 	return true, nil
 }

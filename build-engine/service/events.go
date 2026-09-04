@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"dezzles-apps/build-engine/model"
@@ -30,6 +31,7 @@ func (s *EventService) SendEvent(event model.BuildEvent) error {
 
 	// Build the URL
 	url := fmt.Sprintf("http://%s:%s/api/v1/notify", s.host, s.port)
+	log.Printf("Sending event to: %s", url)
 
 	// Create the POST request
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))

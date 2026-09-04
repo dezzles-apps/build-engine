@@ -14,10 +14,12 @@ const router = new Router()
 app.use(bodyParser())
 router.post('/api/v1/notify', async (ctx) => {
   const { organisation, repository, buildNumber, source, sourceBuildId, message, component, ref } = ctx.request.body;
+  console.log('Received request', ctx.request.body)
   if (!component) {
     ctx.request.body.component = 'default'
   }
   if (!organisation || !repository || !buildNumber || !source || !sourceBuildId || !message || !ref) {
+    console.log('Missing required fields')
     ctx.status = 400;
     ctx.body = { error: 'Missing required fields' };
     return;

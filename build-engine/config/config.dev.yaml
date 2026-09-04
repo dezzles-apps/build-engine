@@ -3,7 +3,7 @@ server:
 
 event-service:
   host: localhost
-  port: $EVENT_SERVICE_PORT
+  port: 3000
 
 database:
   host: dezzles-apps-do-user-35978446-0.h.db.ondigitalocean.com

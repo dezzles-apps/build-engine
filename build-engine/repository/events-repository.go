@@ -3,8 +3,12 @@ package repository
 import (
 	"database/sql"
 	"dezzles-apps/build-engine/model"
+	_ "embed"
 	"fmt"
 )
+
+//go:embed sql/get-build.sql
+var getBuildQuery string
 
 type EventsRepository struct {
 	database *Database
@@ -78,7 +82,7 @@ func (r *EventsRepository) GetRepositoryConfiguration(org string, repository str
 }
 
 func (r *EventsRepository) GetBuild(source string, sourceBuildId string) (*model.DetailedBuildRun, error) {
-	row := r.database.getDB().QueryRow("SELECT r.source_build_id, r.organisation, r.repository, b.build_number, b.start_time, b.discord_thread_id FROM builds b JOIN repositories r ON b.repository_id = r.repository_id WHERE b.source = ? AND b.source_build_id = ?", source, sourceBuildId)
+	row := r.database.getDB().QueryRow(getBuildQuery, source, sourceBuildId)
 
 	var build model.DetailedBuildRun
 	var nullDiscordThreadId sql.NullInt64
@@ -124,7 +128,11 @@ func (r *EventsRepository) UpdateDiscordThreadId(source string, sourceBuildId st
 	return nil
 }
 
-func (r *EventsRepository) CreateRepositoryConfiguration(org string, repository string, channel *string) (*model.RepositoryConfiguration, error) {
+func (r *EventsRepository) CreateRepositoryConfiguration(
+	org string,
+	repository string,
+	channel *string,
+) (*model.RepositoryConfiguration, error) {
 	var existing, err = r.GetRepositoryConfiguration(org, repository)
 	if err != nil && err != model.NoRepositoryConfiguration {
 		return nil, err

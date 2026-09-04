@@ -6,11 +6,11 @@ function title(organisation, repository, buildNumber) {
   return `${organisation}/${repository} - #${buildNumber}`
 }
 
-function newThreadMessage(organisation, repository, buildNumber, buildId, ref, buildUrl) {
-  const t = `${organisation}/${repository} - #${buildNumber}`
+function newThreadMessage(event) {
+  const t = `${event.organisation}/${event.repository} - #${event.buildNumber}`
   return `${t}
-Ref: ${ref}
-[Github Actions Run](${buildUrl})`
+Ref: ${event.ref}
+[Github Actions Run](${event.buildUrl})`
 }
 
 let discordClient = {
@@ -26,14 +26,14 @@ let discordClient = {
       client.login(config.token)
     })
   },
-  createThread: async function(channelName, organisation, repository, buildNumber, buildId, ref, buildUrl) {
-    const threadName = `${organisation}/${repository} #${buildNumber}`;
+  createThread: async function(channelName, event) {
+    const threadName = `${event.organisation}/${event.repository} #${event.buildNumber}`;
     console.log(`Creating thread: ${threadName} in channel: ${channelName}`);
     const channel = persistedClient.channels.cache.find(c => c.name === channelName);
-    const message = await channel.send(newThreadMessage(organisation, repository, buildNumber, buildId, ref, buildUrl));
+    const message = await channel.send(newThreadMessage(event));
     console.log('messageId', message.id);
     return channel.threads.create({
-      name: title(organisation, repository, buildNumber),
+      name: title(event.organisation, event.repository, event.buildNumber),
       autoArchiveDuration: 60,
       startMessage: message.id,
       type: 11, // 11 is the type for a public thread
