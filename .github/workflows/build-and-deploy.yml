@@ -6,6 +6,7 @@ on:
 jobs:
   notify-start:
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: dezzles-apps/action-event/actions/event@main
         id: event
