@@ -5,7 +5,6 @@ import (
 	"dezzles-apps/build-engine/repository"
 	"dezzles-apps/build-engine/service"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -69,15 +68,9 @@ func getRepositoryConfiguration(c *gin.Context) {
 }
 
 func getBuild(c *gin.Context) {
-	org := c.Param("org")
-	repositoryName := c.Param("repository")
-	buildNumberStr := c.Param("build_number")
-	buildNumber, err := strconv.Atoi(buildNumberStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid build number"})
-		return
-	}
-	build, err := eventRepository.GetBuild(org, repositoryName, buildNumber)
+	source := c.Param("source")
+	sourceBuildId := c.Param("sourceBuildId")
+	build, err := eventRepository.GetBuild(source, sourceBuildId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

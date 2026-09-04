@@ -13,11 +13,11 @@ const app = new Koa()
 const router = new Router()
 app.use(bodyParser())
 router.post('/api/v1/notify', async (ctx) => {
-  const { organisation, repository, buildNumber, buildId, message, component, ref } = ctx.request.body;
+  const { organisation, repository, buildNumber, source, sourceBuildId, message, component, ref } = ctx.request.body;
   if (!component) {
     ctx.request.body.component = 'default'
   }
-  if (!organisation || !repository || !buildNumber ||!buildId || !message || !ref) {
+  if (!organisation || !repository || !buildNumber || !source || !sourceBuildId || !message || !ref) {
     ctx.status = 400;
     ctx.body = { error: 'Missing required fields' };
     return;

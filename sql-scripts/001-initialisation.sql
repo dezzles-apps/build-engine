@@ -32,3 +32,6 @@ CREATE TABLE valid_tokens(
   token_id BIGINT AUTO_INCREMENT PRIMARY KEY,
   token varchar(255) NOT NULL UNIQUE
 );
+
+ALTER TABLE build-engine.builds ADD COLUMN source varchar(255) NOT NULL;
+ALTER TABLE build-engine.builds ADD COLUMN source_build_id varchar(255) NOT NULL;

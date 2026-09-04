@@ -77,12 +77,12 @@ func (r *EventsRepository) GetRepositoryConfiguration(org string, repository str
 	return &config, nil
 }
 
-func (r *EventsRepository) GetBuild(org string, repository string, buildNumber int) (*model.DetailedBuildRun, error) {
-	row := r.database.getDB().QueryRow("SELECT r.organisation, r.repository, b.build_number, b.start_time, b.discord_thread_id FROM builds b JOIN repositories r ON b.repository_id = r.repository_id WHERE r.organisation = ? AND r.repository = ? AND b.build_number = ?", org, repository, buildNumber)
+func (r *EventsRepository) GetBuild(source string, sourceBuildId string) (*model.DetailedBuildRun, error) {
+	row := r.database.getDB().QueryRow("SELECT r.source_build_id, r.organisation, r.repository, b.build_number, b.start_time, b.discord_thread_id FROM builds b JOIN repositories r ON b.repository_id = r.repository_id WHERE b.source = ? AND b.source_build_id = ?", source, sourceBuildId)
 
 	var build model.DetailedBuildRun
 	var nullDiscordThreadId sql.NullInt64
-	if err := row.Scan(&build.Organisation, &build.Repository, &build.BuildNumber, &build.StartTime, &nullDiscordThreadId); err != nil {
+	if err := row.Scan(&build.SourceBuildId, &build.Organisation, &build.Repository, &build.BuildNumber, &build.StartTime, &nullDiscordThreadId); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, model.NoBuildRun
 		}
@@ -96,10 +96,10 @@ func (r *EventsRepository) GetBuild(org string, repository string, buildNumber i
 	return &build, nil
 }
 
-func (r *EventsRepository) UpdateDiscordThreadId(org string, repository string, buildNumber int, discordThreadId int64) error {
+func (r *EventsRepository) UpdateDiscordThreadId(source string, sourceBuildId string, discordThreadId int64) error {
 	// First, get the repositoryId for the given org and repository
 	var repositoryId int
-	err := r.database.getDB().QueryRow("SELECT repository_id FROM repositories WHERE organisation = ? AND repository = ?", org, repository).Scan(&repositoryId)
+	err := r.database.getDB().QueryRow("SELECT repository_id FROM repositories WHERE source = ? AND source_build_id = ?", source, sourceBuildId).Scan(&repositoryId)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return model.NoRepositoryConfiguration
@@ -108,7 +108,7 @@ func (r *EventsRepository) UpdateDiscordThreadId(org string, repository string, 
 	}
 
 	// Now update the discord_thread_id for the given build_number and repositoryId
-	result, err := r.database.getDB().Exec("UPDATE builds SET discord_thread_id = ? WHERE build_number = ? AND repository_id = ?", discordThreadId, buildNumber, repositoryId)
+	result, err := r.database.getDB().Exec("UPDATE builds SET discord_thread_id = ? WHERE source = ? AND source_build_id = ?", discordThreadId, source, sourceBuildId)
 	if err != nil {
 		return err
 	}
@@ -118,7 +118,7 @@ func (r *EventsRepository) UpdateDiscordThreadId(org string, repository string, 
 		return err
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("no build found for %s/%s with build number %d", org, repository, buildNumber)
+		return fmt.Errorf("no build found for %s/%s", source, sourceBuildId)
 	}
 
 	return nil
@@ -146,8 +146,8 @@ func (r *EventsRepository) CreateRepositoryConfiguration(org string, repository 
 	return config, nil
 }
 
-func (r *EventsRepository) CreateBuildRun(org string, repository string, buildNumber int, ref string) (*model.DetailedBuildRun, error) {
-	var existing, err = r.GetBuild(org, repository, buildNumber)
+func (r *EventsRepository) CreateBuildRun(source string, sourceBuildId string, org string, repository string, buildNumber int, ref string) (*model.DetailedBuildRun, error) {
+	var existing, err = r.GetBuild(source, sourceBuildId)
 	if err != nil && err != model.NoBuildRun {
 		return nil, err
 	}
@@ -164,16 +164,18 @@ func (r *EventsRepository) CreateBuildRun(org string, repository string, buildNu
 		return nil, err
 	}
 
-	_, err = r.database.getDB().Exec("INSERT INTO builds (repository_id, build_number, ref) VALUES (?, ?, ?)", repositoryId, buildNumber, ref)
+	_, err = r.database.getDB().Exec("INSERT INTO builds (repository_id, source, source_build_id, build_number, ref) VALUES (?, ?, ?, ?, ?)", repositoryId, source, sourceBuildId, buildNumber, ref)
 	if err != nil {
 		return nil, err
 	}
 
 	build := &model.DetailedBuildRun{
-		Organisation: org,
-		Repository:   repository,
-		BuildNumber:  buildNumber,
-		StartTime:    "", // You might want to fetch the actual start time from the database if needed
+		Source:        source,
+		SourceBuildId: sourceBuildId,
+		Organisation:  org,
+		Repository:    repository,
+		BuildNumber:   buildNumber,
+		StartTime:     "",
 	}
 	return build, nil
 }

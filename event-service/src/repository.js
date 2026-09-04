@@ -46,15 +46,15 @@ let repository = {
     })
   },
 
-  getBuild: function(organisation, repositoryName, buildNumber) {
+  getBuild: function(source, sourceBuildId) {
     return new Promise((resolve, reject) => {
       const query = `
-        SELECT r.organisation, r.repository, b.build_id, b.build_number, b.start_time, b.discord_thread_id
+        SELECT r.organisation, r.repository, b.build_id, b.build_number, b.start_time, b.discord_thread_id, b.source_build_id
         FROM builds b
         JOIN repositories r ON b.repository_id = r.repository_id
-        WHERE r.organisation = ? AND r.repository = ? AND b.build_number = ?
+        WHERE b.source = ? AND b.source_build_id = ?
       `
-      connection.query(query, [organisation, repositoryName, buildNumber], (err, results) => {
+      connection.query(query, [source, sourceBuildId], (err, results) => {
         if (err) {
           console.error('Error fetching build:', err)
           reject(err)
@@ -87,15 +87,14 @@ let repository = {
     })
   },
 
-  setDiscordThreadId: function(organisation, repositoryName, buildNumber, build) {
+  setDiscordThreadId: function(source, sourceBuildId, build) {
     return new Promise((resolve, reject) => {
       const query = `
         UPDATE builds b
-        JOIN repositories r ON b.repository_id = r.repository_id
         SET b.discord_thread_id = ?
-        WHERE r.organisation = ? AND r.repository = ? AND b.build_number = ?
+        WHERE b.source_build_id = ? AND b.source = ?
       `
-      connection.query(query, [build.discord_thread_id, organisation, repositoryName, buildNumber], (err, results) => {
+      connection.query(query, [build.discord_thread_id, sourceBuildId, source], (err, results) => {
         if (err) {
           console.error('Error updating discord_thread_id:', err)
           reject(err)

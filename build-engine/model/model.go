@@ -1,10 +1,12 @@
 package model
 
 type BuildRun struct {
-	Organisation string `json:"organisation"`
-	Repository   string `json:"repository"`
-	BuildNumber  int    `json:"buildNumber"`
-	StartTime    string `json:"startTime"`
+	Source        string `json:"source"`
+	SourceBuildId string `json:"sourceBuildId"`
+	Organisation  string `json:"organisation"`
+	Repository    string `json:"repository"`
+	BuildNumber   int    `json:"buildNumber"`
+	StartTime     string `json:"startTime"`
 }
 
 type RepositoryConfiguration struct {
@@ -14,6 +16,8 @@ type RepositoryConfiguration struct {
 }
 
 type DetailedBuildRun struct {
+	Source          string `json:"source"`
+	SourceBuildId   string `json:"sourceBuildId"`
 	Organisation    string `json:"organisation"`
 	Repository      string `json:"repository"`
 	BuildNumber     int    `json:"buildNumber"`

@@ -28,7 +28,7 @@ func (s *BuildService) ValidateBuild(event model.BuildEvent) (bool, error) {
 		return false, nil
 	}
 
-	build, err := s.repository.CreateBuildRun(organisation, repositoryName, buildNumber, ref)
+	build, err := s.repository.CreateBuildRun(event.Source, event.SourceBuildId, organisation, repositoryName, buildNumber, ref)
 	if err != nil {
 		return false, err
 	}

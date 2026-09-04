@@ -6,11 +6,11 @@ function title(organisation, repository, buildNumber) {
   return `${organisation}/${repository} - #${buildNumber}`
 }
 
-function newThreadMessage(organisation, repository, buildNumber, buildId, ref) {
+function newThreadMessage(organisation, repository, buildNumber, buildId, ref, buildUrl) {
   const t = `${organisation}/${repository} - #${buildNumber}`
   return `${t}
 Ref: ${ref}
-[Github Actions Run](https://github.com/${organisation}/${repository}/actions/runs/${buildId})`
+[Github Actions Run](${buildUrl})`
 }
 
 let discordClient = {
@@ -26,11 +26,11 @@ let discordClient = {
       client.login(config.token)
     })
   },
-  createThread: async function(channelName, organisation, repository, buildNumber, buildId, ref) {
+  createThread: async function(channelName, organisation, repository, buildNumber, buildId, ref, buildUrl) {
     const threadName = `${organisation}/${repository} #${buildNumber}`;
     console.log(`Creating thread: ${threadName} in channel: ${channelName}`);
     const channel = persistedClient.channels.cache.find(c => c.name === channelName);
-    const message = await channel.send(newThreadMessage(organisation, repository, buildNumber, buildId, ref));
+    const message = await channel.send(newThreadMessage(organisation, repository, buildNumber, buildId, ref, buildUrl));
     console.log('messageId', message.id);
     return channel.threads.create({
       name: title(organisation, repository, buildNumber),
