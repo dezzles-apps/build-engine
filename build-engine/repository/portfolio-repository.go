@@ -4,6 +4,7 @@ import (
 	"dezzles-apps/build-engine/model"
 	_ "embed"
 	"fmt"
+	"log"
 )
 
 //go:embed sql/update-portfolio.sql
@@ -60,6 +61,10 @@ func (r *PortfolioRepository) UpdatePortfolio(update model.PublishEvent) error {
 			update.Config.ShareRepository,
 			update.RepositoryUrl,
 		)
+		portfolioId, err = r.GetPortfolioId(update.Name)
+		if err != nil {
+			return err
+		}
 	} else {
 		fmt.Println("Updating portfolio entry for projectKey: ", update.Name)
 		r.database.getDB().Exec(
@@ -75,16 +80,18 @@ func (r *PortfolioRepository) UpdatePortfolio(update model.PublishEvent) error {
 			update.RepositoryUrl,
 			update.Name,
 		)
+		fmt.Println("Updated portfolio entry for projectKey: ", update.Name)
 	}
 	return r.UpdateTechnologies(portfolioId, update.Config.Technologies)
 }
 
 func (r *PortfolioRepository) UpdateTechnologies(portfolioId int, technologies []string) error {
-	// Delete existing technologies for the portfolio entry
+	log.Printf("Removing technologies for %d: %s", portfolioId, technologies)
 	_, err := r.database.getDB().Exec("DELETE FROM portfolio_entry_technologies WHERE portfolio_id = ?", portfolioId)
 	if err != nil {
 		return err
 	}
+	log.Printf("Removed technologies for %d: %s", portfolioId, technologies)
 
 	if len(technologies) == 0 {
 		return nil
@@ -115,7 +122,7 @@ func (r *PortfolioRepository) UpdateTechnologies(portfolioId int, technologies [
 
 	// Build insert query for existing technologies only
 	insertQuery := "INSERT INTO portfolio_entry_technologies (portfolio_id, technology_id) VALUES "
-	insertArgs := make([]interface{}, len(technologies)*2)
+	insertArgs := make([]interface{}, 0)
 
 	for i, tech := range technologies {
 		if _, exists := existingTechs[tech]; !exists {
@@ -125,8 +132,8 @@ func (r *PortfolioRepository) UpdateTechnologies(portfolioId int, technologies [
 			insertQuery += ", "
 		}
 		insertQuery += "(?, ?)"
-		insertArgs[i*2] = portfolioId
-		insertArgs[i*2+1] = existingTechs[tech]
+		insertArgs = append(insertArgs, portfolioId)
+		insertArgs = append(insertArgs, existingTechs[tech])
 	}
 	// Execute insert for all technologies (non-existent ones will be silently skipped by the IN clause)
 	_, err = r.database.getDB().Exec(insertQuery, insertArgs...)
