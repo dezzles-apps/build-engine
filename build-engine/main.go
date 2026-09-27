@@ -6,6 +6,7 @@ import (
 	"dezzles-apps/build-engine/service"
 	"net/http"
 
+	"github.com/dezzles-apps/go-common/monitoring"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,8 +16,11 @@ var portfolioRepository *repository.PortfolioRepository = &repository.PortfolioR
 var database *repository.Database = &repository.Database{}
 var eventRepository *repository.EventsRepository = &repository.EventsRepository{}
 
-func main() {
+var monitor = &monitoring.Monitoring{}
 
+func main() {
+	monitor.Initialise()
+	defer monitor.Shutdown()
 	config, err := model.LoadConfig()
 	if err != nil {
 		panic(err)
@@ -27,6 +31,7 @@ func main() {
 	buildService.Initialise(eventRepository)
 	portfolioRepository.Initialise(database)
 	router := gin.Default()
+	monitor.ConfigureGinRouter(router)
 	router.GET("/api/v1/builds", getAllBuilds)
 	router.GET("/api/v1/builds/:org/:repository", getBuildsByRepository)
 	router.GET("/api/v1/builds/:org/:repository/:build_number", getBuild)

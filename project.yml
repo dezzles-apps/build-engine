@@ -9,6 +9,8 @@ primary:
   name: build-engine
   image: us-west2-docker.pkg.dev/dezzles-apps/dezzles-apps-docker/build-engine
   port: 8080
+  monitoring:
+    enabled: true
   env:
     - envName: EVENT_SERVICE_PORT
       value: '8888'
@@ -21,6 +23,8 @@ sidecars:
   - name: event-service
     image: us-west2-docker.pkg.dev/dezzles-apps/dezzles-apps-docker/event-service
     port: 8888
+    monitoring:
+      enabled: true
     secrets:
       - envName: DATABASE_PASSWORD_PROD
         secretName: build-engine-db-password-prd

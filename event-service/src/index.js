@@ -5,6 +5,23 @@ import bodyParser from '@koa/bodyparser'
 import Repository from './repository.js'
 import EventService from './event-service.js'
 import Config from './config.js'
+
+import * as HyperDX from '@hyperdx/node-opentelemetry';
+ 
+let APIKey = process.env.OTEL_EXPORTER_OTLP_HEADERS
+APIKey = APIKey.replace('authorization-', '')
+let service = process.env.OTEL_SERVICE_NAME
+if (server && APIKey) {
+  HyperDX.init({
+    apiKey: APIKey,
+    service: service
+  });
+} else {
+  if (!APIKey) console.log('OTEL: No APIKey provided')
+  if (!service) console.log('OTEL: No service name provided')
+}
+
+
 console.log('Beginning connection to Discord and Database...')
 await Promise.all([Discord.connect(Config.discord), Repository.connect(Config.database)])
 console.log('Connected to Discord and Database.')
